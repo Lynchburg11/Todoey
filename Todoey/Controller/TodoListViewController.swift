@@ -19,7 +19,7 @@ class TodoListViewController: UITableViewController {
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     
-    // ---------------   VIEW DID LOAD --------------
+            // ---------------   VIEW DID LOAD --------------
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -31,7 +31,7 @@ class TodoListViewController: UITableViewController {
 
     }
 
-    //MARK ----------  Tableview Datasource Methods  -----------------
+//MARK          ----------  Tableview Datasource Methods  -----------------
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return itemArray.count
@@ -60,7 +60,7 @@ class TodoListViewController: UITableViewController {
     
     
     
-    //MARK ------------ TableView Delegate Methods  ----------------------
+//MARK          ------------ TableView Delegate Methods  ----------------------
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
      
@@ -70,7 +70,7 @@ class TodoListViewController: UITableViewController {
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
   
         
-//            -------- Delete Items ----------
+//            -------- Delete Items Example ----------
 //        context.delete(itemArray[indexPath.row])
 //        itemArray.remove(at: indexPath.row)
 
@@ -85,7 +85,7 @@ class TodoListViewController: UITableViewController {
     
     
     
-    //MARK  ---------------   Add New Items   ----------------------------
+//MARK  ---------------   Add New Items   ----------------------------
 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
@@ -120,7 +120,7 @@ class TodoListViewController: UITableViewController {
   
     }
     
-    //MARK ---------------- Model Manupulation Methods -----------------------
+//MARK ---------------- Model Manupulation Methods -----------------------
     
     func saveItems() {
         
@@ -136,17 +136,49 @@ class TodoListViewController: UITableViewController {
     
     
     
-    func loadItems() {
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
         
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
         do{
             itemArray = try context.fetch(request)
         }catch{
             print("Error fetching Data from context \(error)")
         }
+        
+        tableView.reloadData()
 
     }
+    
+
     
     
 }
 
+//MARK:  Search Bar methods
+
+extension TodoListViewController: UISearchBarDelegate{
+    
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request: NSFetchRequest<Item> = Item.fetchRequest()
+        
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        
+        loadItems(with: request)
+
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+            
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+            
+        }
+    }
+    
+}
