@@ -16,7 +16,7 @@ class CategoryTableViewController: UITableViewController {
     
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
-    
+   
     
     
     override func viewDidLoad() {
@@ -26,6 +26,28 @@ class CategoryTableViewController: UITableViewController {
         
     }
 
+    
+//MARK:                      ---- TableView Datasource Methods ---
+    
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return CategoryArray.count
+        
+    }
+    
+    
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        
+        cell.textLabel?.text = CategoryArray[indexPath.row].name
+        
+        return cell
+        
+        
+    }
+    
     
     
 //MARK:                         --------  Add New Items  --------
@@ -49,8 +71,9 @@ class CategoryTableViewController: UITableViewController {
         }
     
         alert.addTextField { (alertTextfield) in
-            alertTextfield.placeholder = "Create a new Category"
             textField = alertTextfield
+            alertTextfield.placeholder = "Create a new Category"
+            
         }
         
         alert.addAction(action)
@@ -62,29 +85,25 @@ class CategoryTableViewController: UITableViewController {
 
     
     
+//MARK:             ---- TableView Delegate Methods ---
     
-//MARK: ---- TableView Datasource Methods ---
     
-    
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return CategoryArray.count
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        performSegue(withIdentifier: "goToItems", sender: self)
+        
+        // flashes row
+        tableView.deselectRow(at: indexPath, animated: true)
         
     }
-    
-    
-    
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let destinationVC = segue.destination as! TodoListViewController
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-        
-        let item = CategoryArray[indexPath.row]
-        
-        cell.textLabel?.text = item.name
-        
-        return cell
-        
-        
+        if let indexPath = tableView.indexPathForSelectedRow{
+            destinationVC.selectedCategory = CategoryArray[indexPath.row]
+        }
     }
+    
     
     
     
@@ -99,20 +118,23 @@ class CategoryTableViewController: UITableViewController {
             try context.save()
             print("Items successfully saved in Container")
         } catch {
-            print("Error saving Items in Container, \(error)")
+            print("Error saving Category in Container, \(error)")
         }
         
         tableView.reloadData()
     }
+    
+
     
     
                 // ------- Load Items --------
     func loadCategory(with request: NSFetchRequest<Category> = Category.fetchRequest()) {
         
+        
         do{
             CategoryArray = try context.fetch(request)
         }catch{
-            print("Error fetching Data from context \(error)")
+            print("Error fetching Category from context \(error)")
         }
         
         tableView.reloadData()
@@ -120,17 +142,9 @@ class CategoryTableViewController: UITableViewController {
     }
     
     
+
     
-    
-    
-    
-    
-//MARK: ---- TableView Delegate Methods ---
-    
-    
-    
-    
-   
+
     
     
 }
